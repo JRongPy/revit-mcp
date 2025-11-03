@@ -1,3 +1,4 @@
+export const SKIP_REGISTER = true;
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { withRevitConnection } from "../utils/ConnectionManager.js";
