@@ -21,6 +21,13 @@ export async function registerTools(server: McpServer) {
       file !== "register.js"
   );
 
+  console.error("========================================");
+  console.error("開始註冊 MCP Tools");
+  console.error("========================================");
+
+  let registeredCount = 0;
+  let skippedCount = 0;
+
   // 动态导入并注册每个工具
   for (const file of toolFiles) {
     try {
@@ -30,19 +37,29 @@ export async function registerTools(server: McpServer) {
       // 动态导入模块
       const module = await import(importPath);
 
+      // ⭐ 檢查是否標記為跳過註冊
+      if (module.SKIP_REGISTER === true) {
+        console.error(`⏭️  跳過: ${file.padEnd(40)} (SKIP_REGISTER)`);
+        skippedCount++;
+        continue;
+      }
+
       // 查找并执行注册函数
       const registerFunctionName = Object.keys(module).find(
         (key) => key.startsWith("register") && typeof module[key] === "function"
       );
-
       if (registerFunctionName) {
         module[registerFunctionName](server);
-        console.error(`已注册工具: ${file}`);
+        console.error(`✅ 已註冊: ${file}`);
+        registeredCount++;
       } else {
-        console.warn(`警告: 在文件 ${file} 中未找到注册函数`);
+        console.error(`⚠️  警告: ${file.padEnd(40)} (未找到註冊函數)`);
       }
     } catch (error) {
-      console.error(`注册工具 ${file} 时出错:`, error);
+       console.error(`❌ 錯誤: ${file.padEnd(40)} - ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+  console.error("========================================");
+  console.error(`註冊完成: ✅ ${registeredCount} 個 | ⏭️  ${skippedCount} 個已跳過`);
+  console.error("========================================");
 }
